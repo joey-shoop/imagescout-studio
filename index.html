@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImageScout Studio — Free Online Image Resizer, Converter & Compressor</title>
+  <meta name="description" content="Free online image resizer, converter, and compressor. Resize to exact dimensions, convert to WebP or JPEG, and compress images — all in your browser. No uploads, no account required." />
+  <meta property="og:title" content="ImageScout Studio — Free Online Image Resizer, Converter & Compressor" />
+  <meta property="og:description" content="Resize, convert, and compress images instantly in your browser. Free, private, and no account required." />
+  <meta property="og:image" content="https://studio.imagescout.site/ImageScout.png" />
+  <meta property="og:url" content="https://studio.imagescout.site" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="ImageScout Studio" />
+  <meta name="twitter:description" content="Resize, convert, and compress images instantly in your browser. Free, private, no account required." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f0;
+      --surface: #ffffff;
+      --surface2: #f5f7f5;
+      --border: #d6dbd6;
+      --border-bright: #b8c0b8;
+      --accent: #5cb800;
+      --accent-dark: #4a9600;
+      --accent-dim: rgba(92,184,0,0.10);
+      --accent-hover: #68d100;
+      --red: #cc2a2a;
+      --text: #1a2010;
+      --text-muted: #5a6a50;
+      --text-dim: #9aaa90;
+      --font: Tahoma, Geneva, Verdana, sans-serif;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --header-bg: #ffffff;
+      --header-border: #d0d8c8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: 1px solid var(--header-border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .logo-icon img { width: 100%; height: 100%; display: block; }
+
+    .logo-text {
+      font-family: var(--font);
+      font-weight: bold;
+      font-size: 1.05rem;
+      color: var(--text);
+    }
+
+    .logo-text span { color: var(--accent-dark); }
+
+    .header-badge {
+      font-family: var(--font);
+      font-size: 0.62rem;
+      color: var(--accent-dark);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      padding: 2px 7px;
+      letter-spacing: 0.08em;
+      font-weight: bold;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    .page-title {
+      font-family: var(--font);
+      font-weight: bold;
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    .page-sub {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── DROP ZONE ── */
+    #drop-zone {
+      border: 2px dashed var(--border-bright);
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--surface);
+      position: relative;
+    }
+
+    #drop-zone.dragover,
+    #drop-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    #drop-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      color: var(--text-muted);
+    }
+
+    .drop-title {
+      font-family: var(--font);
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .drop-hint {
+      font-family: var(--font);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .drop-hint span {
+      color: var(--accent);
+    }
+
+    /* ── TOOL PANEL ── */
+    #tool-panel {
+      display: none;
+      margin-top: 2rem;
+      gap: 1.5rem;
+      flex-direction: column;
+    }
+
+    #tool-panel.visible { display: flex; }
+
+    /* ── SETTINGS ROW ── */
+    .settings-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .setting-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.4rem;
+    }
+
+    .setting-label {
+      font-family: var(--font);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+    }
+
+    .setting-label .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    /* Format toggle */
+    .format-toggle {
+      display: flex;
+      gap: 6px;
+    }
+
+    .fmt-btn {
+      flex: 1;
+      padding: 8px 0;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: bold;
+    }
+
+    .fmt-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .fmt-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #000;
+      font-weight: 500;
+    }
+
+    /* Dimension inputs */
+    .dim-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dim-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.88rem;
+      padding: 8px 10px;
+      width: 100%;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+
+    .dim-input::-webkit-outer-spin-button,
+    .dim-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .dim-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .dim-sep {
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .lock-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .lock-btn.locked { border-color: var(--accent); color: var(--accent); }
+    .lock-btn svg { width: 14px; height: 14px; }
+
+    /* Quality slider */
+    .quality-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    .quality-val {
+      font-family: var(--font);
+      font-size: 0.85rem;
+      color: var(--accent-dark);
+      font-weight: bold;
+      min-width: 36px;
+      text-align: right;
+    }
+
+    /* ── PREVIEW ── */
+    .preview-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .preview-title {
+      font-family: var(--font);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .preview-meta {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .meta-chip {
+      font-family: var(--font);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .meta-chip .val {
+      color: var(--text);
+      font-weight: bold;
+    }
+
+    .meta-chip .val.green { color: var(--accent-dark); }
+    .meta-chip .val.red { color: var(--red); }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 640px) {
+      .preview-grid { grid-template-columns: 1fr; }
+    }
+
+    .preview-pane {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .preview-pane:first-child {
+      border-right: 1px solid var(--border);
+    }
+
+    .pane-label {
+      font-family: var(--font);
+      font-size: 0.67rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .preview-img-wrap {
+      background: repeating-conic-gradient(#e8ebe8 0% 25%, #d8dbd8 0% 50%) 0 0 / 16px 16px;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+
+    .preview-img-wrap img {
+      max-width: 100%;
+      max-height: 320px;
+      display: block;
+      object-fit: contain;
+    }
+
+    .pane-stats {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      font-family: var(--font);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .stat b {
+      color: var(--text);
+      font-weight: bold;
+    }
+
+    /* ── PROCESS BUTTON ── */
+    .actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-process {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding: 11px 24px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-process:hover { background: var(--accent-dark); }
+    .btn-process:active { transform: scale(0.98); }
+    .btn-process:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-download {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 0.82rem;
+      padding: 11px 20px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-download:hover { border-color: var(--accent); color: var(--accent-dark); }
+    .btn-download:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .btn-reset {
+      background: none;
+      color: var(--text-muted);
+      border: none;
+      font-family: var(--font);
+      font-size: 0.78rem;
+      cursor: pointer;
+      padding: 4px 0;
+      transition: color 0.15s;
+      margin-left: auto;
+    }
+
+    .btn-reset:hover { color: var(--red); }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      font-family: var(--font);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.6rem 0;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1.5s ease-in-out infinite;
+      display: none;
+    }
+
+    .status-dot.active { display: block; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── BATCH ── */
+    .batch-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .batch-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .batch-title {
+      font-family: var(--font);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .batch-count {
+      background: var(--accent-dim);
+      color: var(--accent-dark);
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 0.68rem;
+      font-weight: bold;
+    }
+
+    .batch-list {
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .batch-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.7rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font);
+      font-size: 0.75rem;
+      transition: background 0.15s;
+    }
+
+    .batch-item:last-child { border-bottom: none; }
+    .batch-item:hover { background: var(--surface2); }
+
+    .batch-thumb {
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      object-fit: cover;
+      background: var(--surface2);
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+
+    .batch-info { flex: 1; min-width: 0; }
+
+    .batch-name {
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .batch-size { color: var(--text-muted); font-size: 0.68rem; }
+
+    .batch-status {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      white-space: nowrap;
+      font-weight: bold;
+    }
+
+    .batch-status.pending { color: var(--text-dim); background: var(--surface2); border: 1px solid var(--border); }
+    .batch-status.done { color: var(--accent-dark); background: var(--accent-dim); }
+    .batch-status.processing { color: #7a5800; background: rgba(240,180,41,0.15); }
+
+    .btn-remove-batch {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      transition: color 0.15s;
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-remove-batch:hover { color: var(--red); }
+
+    .btn-batch-process {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 0.78rem;
+      font-weight: bold;
+      padding: 7px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-batch-process:hover { background: var(--accent-dark); }
+    .btn-batch-process:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── PRIVACY NOTE ── */
+    .privacy-note {
+      font-family: var(--font);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      text-align: center;
+      margin-top: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .privacy-note svg { width: 12px; height: 12px; color: var(--accent); }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+    /* ── SOURCE BANNER ── */
+    .source-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(92,184,0,0.25);
+      border-radius: var(--radius-sm);
+      padding: 0.6rem 1rem;
+      font-family: var(--font);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+
+    .source-banner svg { color: var(--accent-dark); flex-shrink: 0; }
+
+    .source-link {
+      color: var(--accent-dark);
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .source-link:hover { text-decoration: underline; }
+
+    .source-dismiss {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      padding: 2px 4px;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+
+    .source-dismiss:hover { color: var(--red); }
+
+    /* ── CORS WARNING ── */
+    .cors-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      background: #fff8e6;
+      border: 1px solid #f0c84a;
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 1rem;
+      font-family: var(--font);
+      font-size: 0.76rem;
+      color: #7a5800;
+      margin-bottom: 1rem;
+    }
+
+    .cors-warning svg { color: #c88a00; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── EXT CTA BANNER ── */
+    .ext-cta {
+      background: var(--accent-dim);
+      border-bottom: 1px solid rgba(92,184,0,0.2);
+    }
+
+    .ext-cta-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.6rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .ext-cta-inner svg { color: var(--accent-dark); flex-shrink: 0; }
+    .ext-cta-inner strong { color: var(--text); }
+
+    .ext-cta-link {
+      margin-left: auto;
+      color: var(--accent-dark);
+      text-decoration: none;
+      font-weight: bold;
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+
+    .ext-cta-link:hover { color: var(--accent); }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="#">
+      <div class="logo-icon">
+        <img src="ImageScout.png" alt="ImageScout" />
+      </div>
+      <span class="logo-text">Image<span>Scout</span> Studio</span>
+    </a>
+    <span class="header-badge">BETA</span>
+  </header>
+
+  <div class="ext-cta">
+    <div class="ext-cta-inner">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="5.5"/><circle cx="7" cy="7" r="2"/><path d="M7 1.5V4M7 10v2.5M1.5 7H4M10 7h2.5" stroke-linecap="round"/></svg>
+      <span>Pair with the <strong>ImageScout Chrome Extension</strong> to inspect images directly on any webpage.</span>
+      <a class="ext-cta-link" href="https://chromewebstore.google.com/search/ImageScout" target="_blank" rel="noopener">Get the Extension →</a>
+    </div>
+  </div>
+
+  <main>
+    <h1 class="page-title">ImageScout Studio</h1>
+    <p class="page-sub">Resize, convert &amp; compress images — 100% client-side. Your images never leave your browser.</p>
+
+    <!-- DROP ZONE -->
+    <div id="drop-zone">
+      <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" multiple />
+      <div class="drop-icon">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="10" width="36" height="28" rx="3" stroke-linecap="round"/>
+          <circle cx="17" cy="20" r="3"/>
+          <path d="M6 32l9-9 7 7 6-6 8 8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M30 6l4 4-4 4M34 10H22" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="drop-title">Drop image(s) here</div>
+      <div class="drop-hint">or click to browse &nbsp;·&nbsp; <span>JPEG, PNG, WebP, GIF, AVIF</span></div>
+    </div>
+
+    <!-- TOOL PANEL -->
+    <div id="tool-panel">
+
+      <!-- SETTINGS -->
+      <div class="settings-row">
+
+        <!-- Format -->
+        <div class="setting-card">
+          <div class="setting-label"><span class="dot"></span>Output Format</div>
+          <div class="format-toggle">
+            <button class="fmt-btn active" data-fmt="image/jpeg">JPEG</button>
+            <button class="fmt-btn" data-fmt="image/webp">WebP</button>
+            <button class="fmt-btn" data-fmt="same">Same</button>
+          </div>
+        </div>
+
+        <!-- Dimensions -->
+        <div class="setting-card">
+          <div class="setting-label"><span class="dot"></span>Dimensions (px)</div>
+          <div class="dim-row">
+            <input class="dim-input" type="number" id="inp-w" placeholder="Width" min="1" />
+            <span class="dim-sep">×</span>
+            <input class="dim-input" type="number" id="inp-h" placeholder="Height" min="1" />
+            <button class="lock-btn locked" id="lock-btn" title="Lock aspect ratio">
+              <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="6" width="8" height="6" rx="1.5"/>
+                <path d="M5 6V4.5a2 2 0 014 0V6" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quality -->
+        <div class="setting-card">
+          <div class="setting-label"><span class="dot"></span>Quality</div>
+          <div class="quality-row">
+            <input type="range" id="quality-slider" min="10" max="100" value="85" step="5" />
+            <span class="quality-val" id="quality-val">85%</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SINGLE PREVIEW -->
+      <div class="preview-section" id="preview-section">
+        <div class="preview-header">
+          <span class="preview-title">Preview</span>
+          <div class="preview-meta">
+            <span class="meta-chip">Before <span class="val" id="meta-before-size">—</span></span>
+            <span class="meta-chip">After <span class="val green" id="meta-after-size">—</span></span>
+            <span class="meta-chip">Savings <span class="val green" id="meta-savings">—</span></span>
+          </div>
+        </div>
+        <div class="preview-grid">
+          <div class="preview-pane">
+            <div class="pane-label">Original</div>
+            <div class="preview-img-wrap" id="orig-wrap">
+              <img id="orig-img" src="" alt="Original" />
+            </div>
+            <div class="pane-stats">
+              <span class="stat"><b id="orig-w">—</b> × <b id="orig-h">—</b> px</span>
+              <span class="stat"><b id="orig-fmt">—</b></span>
+              <span class="stat"><b id="orig-size">—</b></span>
+            </div>
+          </div>
+          <div class="preview-pane">
+            <div class="pane-label">Output</div>
+            <div class="preview-img-wrap" id="out-wrap">
+              <img id="out-img" src="" alt="Output" style="display:none;" />
+            </div>
+            <div class="pane-stats">
+              <span class="stat"><b id="out-w">—</b> × <b id="out-h">—</b> px</span>
+              <span class="stat"><b id="out-fmt">—</b></span>
+              <span class="stat"><b id="out-size">—</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="actions">
+        <button class="btn-process" id="btn-process">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg">
+            <path d="M7 1v2M7 11v2M1 7h2M11 7h2M2.93 2.93l1.41 1.41M9.66 9.66l1.41 1.41M2.93 11.07l1.41-1.41M9.66 4.34l1.41-1.41" stroke-linecap="round"/>
+          </svg>
+          Process Image
+        </button>
+        <button class="btn-download" id="btn-download" disabled>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.5 1v7M3.5 5.5l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1 10h11" stroke-linecap="round"/>
+          </svg>
+          Download
+        </button>
+        <button class="btn-reset" id="btn-reset">✕ Clear</button>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-msg">Ready.</span>
+      </div>
+
+      <!-- BATCH QUEUE -->
+      <div class="batch-section" id="batch-section" style="display:none;">
+        <div class="batch-header">
+          <div class="batch-title">
+            Batch Queue
+            <span class="batch-count" id="batch-count">0</span>
+          </div>
+          <button class="btn-batch-process" id="btn-batch-process">Process &amp; Download All</button>
+        </div>
+        <div class="batch-list" id="batch-list"></div>
+      </div>
+
+    </div><!-- /tool-panel -->
+
+    <div class="privacy-note">
+      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 1L1.5 3v3c0 2.5 1.97 4.84 4.5 5.5C8.53 10.84 10.5 8.5 10.5 6V3L6 1z"/>
+      </svg>
+      Images are processed locally in your browser. Nothing is uploaded to any server.
+    </div>
+  </main>
+
+  <script>
+    // ── STATE ──
+    let files = [];
+    let primaryFile = null;
+    let primaryOrigBlob = null;
+    let primaryOutBlob = null;
+    let aspectRatio = null;
+    let locked = true;
+    let outputFormat = 'image/jpeg';
+    let quality = 0.85;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // ── ELEMENTS ──
+    const dropZone    = document.getElementById('drop-zone');
+    const fileInput   = document.getElementById('file-input');
+    const toolPanel   = document.getElementById('tool-panel');
+    const btnProcess  = document.getElementById('btn-process');
+    const btnDownload = document.getElementById('btn-download');
+    const btnReset    = document.getElementById('btn-reset');
+    const btnLock     = document.getElementById('lock-btn');
+    const inpW        = document.getElementById('inp-w');
+    const inpH        = document.getElementById('inp-h');
+    const qSlider     = document.getElementById('quality-slider');
+    const qVal        = document.getElementById('quality-val');
+    const statusDot   = document.getElementById('status-dot');
+    const statusMsg   = document.getElementById('status-msg');
+    const origImg     = document.getElementById('orig-img');
+    const outImg      = document.getElementById('out-img');
+    const batchSection= document.getElementById('batch-section');
+    const batchList   = document.getElementById('batch-list');
+    const batchCount  = document.getElementById('batch-count');
+    const btnBatch    = document.getElementById('btn-batch-process');
+
+    // ── FORMAT BUTTONS ──
+    document.querySelectorAll('.fmt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        outputFormat = btn.dataset.fmt;
+        updateOutFmtLabel();
+      });
+    });
+
+    // ── QUALITY SLIDER ──
+    qSlider.addEventListener('input', () => {
+      quality = parseInt(qSlider.value) / 100;
+      qVal.textContent = qSlider.value + '%';
+    });
+
+    // ── LOCK BUTTON ──
+    btnLock.addEventListener('click', () => {
+      locked = !locked;
+      btnLock.classList.toggle('locked', locked);
+    });
+
+    inpW.addEventListener('input', () => {
+      if (locked && aspectRatio && inpW.value) {
+        inpH.value = Math.round(parseInt(inpW.value) / aspectRatio);
+      }
+    });
+
+    inpH.addEventListener('input', () => {
+      if (locked && aspectRatio && inpH.value) {
+        inpW.value = Math.round(parseInt(inpH.value) * aspectRatio);
+      }
+    });
+
+    // ── DROP / FILE INPUT ──
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      handleFiles([...e.dataTransfer.files]);
+    });
+    fileInput.addEventListener('change', () => handleFiles([...fileInput.files]));
+
+    function handleFiles(newFiles) {
+      const imgs = newFiles.filter(f => f.type.startsWith('image/'));
+      if (!imgs.length) return;
+      files = imgs;
+      primaryFile = imgs[0];
+      loadPrimary(primaryFile);
+      if (imgs.length > 1) renderBatch(imgs);
+      else { batchSection.style.display = 'none'; }
+      toolPanel.classList.add('visible');
+    }
+
+    function loadPrimary(file) {
+      primaryOrigBlob = file;
+      primaryOutBlob = null;
+      btnDownload.disabled = true;
+      outImg.style.display = 'none';
+
+      const url = URL.createObjectURL(file);
+      origImg.src = url;
+      origImg.onload = () => {
+        aspectRatio = origImg.naturalWidth / origImg.naturalHeight;
+        inpW.value = origImg.naturalWidth;
+        inpH.value = origImg.naturalHeight;
+        document.getElementById('orig-w').textContent = origImg.naturalWidth;
+        document.getElementById('orig-h').textContent = origImg.naturalHeight;
+        document.getElementById('orig-fmt').textContent = file.type.split('/')[1].toUpperCase();
+        document.getElementById('orig-size').textContent = fmtBytes(file.size);
+        setStatus('Image loaded. Adjust settings and click Process.');
+        updateOutFmtLabel();
+      };
+    }
+
+    function updateOutFmtLabel() {
+      const fmt = outputFormat === 'same'
+        ? (primaryFile ? primaryFile.type.split('/')[1].toUpperCase() : '—')
+        : outputFormat.split('/')[1].toUpperCase();
+      document.getElementById('out-fmt').textContent = fmt;
+    }
+
+    // ── PROCESS ──
+    btnProcess.addEventListener('click', () => processImage(primaryFile, true));
+
+    async function processImage(file, isPrimary) {
+      setStatus('Processing...', true);
+      btnProcess.disabled = true;
+
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.src = url;
+
+      await new Promise(res => img.onload = res);
+
+      const targetW = isPrimary && inpW.value ? parseInt(inpW.value) : img.naturalWidth;
+      const targetH = isPrimary && inpH.value ? parseInt(inpH.value) : img.naturalHeight;
+
+      canvas.width  = targetW;
+      canvas.height = targetH;
+      ctx.clearRect(0, 0, targetW, targetH);
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+
+      const fmt = outputFormat === 'same' ? file.type : outputFormat;
+      const blob = await new Promise(res => canvas.toBlob(res, fmt, quality));
+      URL.revokeObjectURL(url);
+
+      if (isPrimary) {
+        primaryOutBlob = blob;
+        const outUrl = URL.createObjectURL(blob);
+        outImg.src = outUrl;
+        outImg.style.display = 'block';
+        document.getElementById('out-w').textContent = targetW;
+        document.getElementById('out-h').textContent = targetH;
+        document.getElementById('out-size').textContent = fmtBytes(blob.size);
+
+        const savings = ((1 - blob.size / file.size) * 100);
+        document.getElementById('meta-before-size').textContent = fmtBytes(file.size);
+        document.getElementById('meta-after-size').textContent = fmtBytes(blob.size);
+        const savEl = document.getElementById('meta-savings');
+        if (savings > 0) {
+          savEl.textContent = savings.toFixed(1) + '% smaller';
+          savEl.className = 'val green';
+        } else {
+          savEl.textContent = Math.abs(savings).toFixed(1) + '% larger';
+          savEl.className = 'val red';
+        }
+
+        btnDownload.disabled = false;
+        setStatus(`Done. ${fmtBytes(file.size)} → ${fmtBytes(blob.size)} (${savings > 0 ? '-' : '+'}${Math.abs(savings).toFixed(1)}%)`);
+        btnProcess.disabled = false;
+      }
+      return blob;
+    }
+
+    // ── DOWNLOAD ──
+    btnDownload.addEventListener('click', () => {
+      if (!primaryOutBlob || !primaryFile) return;
+      const fmt = outputFormat === 'same' ? primaryFile.type : outputFormat;
+      const ext = fmt.split('/')[1];
+      const name = primaryFile.name.replace(/\.[^.]+$/, '') + '.' + ext;
+      triggerDownload(primaryOutBlob, name);
+    });
+
+    function triggerDownload(blob, name) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+    }
+
+    // ── RESET ──
+    btnReset.addEventListener('click', () => {
+      files = [];
+      primaryFile = null;
+      primaryOrigBlob = null;
+      primaryOutBlob = null;
+      aspectRatio = null;
+      origImg.src = '';
+      outImg.src = '';
+      outImg.style.display = 'none';
+      inpW.value = '';
+      inpH.value = '';
+      fileInput.value = '';
+      toolPanel.classList.remove('visible');
+      batchSection.style.display = 'none';
+      btnDownload.disabled = true;
+      ['orig-w','orig-h','orig-fmt','orig-size','out-w','out-h','out-fmt','out-size',
+       'meta-before-size','meta-after-size','meta-savings'].forEach(id => {
+        document.getElementById(id).textContent = '—';
+      });
+      setStatus('Ready.');
+    });
+
+    // ── BATCH ──
+    function renderBatch(imgs) {
+      batchList.innerHTML = '';
+      batchCount.textContent = imgs.length;
+      imgs.forEach((f, i) => {
+        const row = document.createElement('div');
+        row.className = 'batch-item';
+        row.dataset.index = i;
+
+        const thumb = document.createElement('img');
+        thumb.className = 'batch-thumb';
+        thumb.src = URL.createObjectURL(f);
+
+        const info = document.createElement('div');
+        info.className = 'batch-info';
+        info.innerHTML = `<div class="batch-name">${escHtml(f.name)}</div><div class="batch-size">${fmtBytes(f.size)}</div>`;
+
+        const status = document.createElement('span');
+        status.className = 'batch-status pending';
+        status.textContent = i === 0 ? 'primary' : 'queued';
+        status.id = `batch-status-${i}`;
+
+        const rm = document.createElement('button');
+        rm.className = 'btn-remove-batch';
+        rm.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" xmlns="http://www.w3.org/2000/svg"><path d="M2 2l8 8M10 2l-8 8" stroke-linecap="round"/></svg>`;
+        rm.addEventListener('click', () => {
+          files.splice(i, 1);
+          row.remove();
+          batchCount.textContent = files.length;
+          if (files.length <= 1) batchSection.style.display = 'none';
+        });
+
+        row.append(thumb, info, status, rm);
+        batchList.appendChild(row);
+      });
+      batchSection.style.display = 'block';
+    }
+
+    btnBatch.addEventListener('click', async () => {
+      btnBatch.disabled = true;
+      setStatus('Processing batch...', true);
+
+      const JSZip = window.JSZip; // optional, fallback to individual downloads
+
+      for (let i = 0; i < files.length; i++) {
+        const statusEl = document.getElementById(`batch-status-${i}`);
+        if (statusEl) { statusEl.textContent = 'processing'; statusEl.className = 'batch-status processing'; }
+
+        const blob = await processImage(files[i], i === 0);
+        const fmt = outputFormat === 'same' ? files[i].type : outputFormat;
+        const ext = fmt.split('/')[1];
+        const name = files[i].name.replace(/\.[^.]+$/, '') + '.' + ext;
+        triggerDownload(blob, name);
+
+        if (statusEl) { statusEl.textContent = 'done'; statusEl.className = 'batch-status done'; }
+        await new Promise(r => setTimeout(r, 300));
+      }
+      setStatus(`Batch complete. ${files.length} files processed.`);
+      btnBatch.disabled = false;
+    });
+
+    // ── HELPERS ──
+    function fmtBytes(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+      return (b / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function setStatus(msg, active = false) {
+      statusMsg.textContent = msg;
+      statusDot.classList.toggle('active', active);
+    }
+
+    function escHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // ── URL PARAMETER HANDLING ──
+    async function loadFromUrl(imgUrl) {
+      showSourceBanner(imgUrl);
+      setStatus('Fetching image from URL...', true);
+      toolPanel.classList.add('visible');
+
+      try {
+        // Attempt CORS fetch — works for most CDN-hosted and public images
+        const response = await fetch(imgUrl, { mode: 'cors' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const blob = await response.blob();
+
+        // Detect mime type — fall back to jpeg if unknown
+        const mime = blob.type && blob.type.startsWith('image/') ? blob.type : 'image/jpeg';
+        const filename = imgUrl.split('/').pop().split('?')[0] || 'image.jpg';
+        const file = new File([blob], filename, { type: mime });
+
+        primaryFile = file;
+        files = [file];
+        loadPrimary(file);
+        setStatus('Image loaded from URL. Adjust settings and click Process.');
+
+      } catch (err) {
+        // CORS blocked — show image via URL directly for preview, prompt manual save
+        console.warn('CORS fetch blocked, falling back to URL preview:', err);
+        showCorsWarning(imgUrl);
+
+        // Still show original preview using the URL directly
+        origImg.src = imgUrl;
+        origImg.onload = () => {
+          aspectRatio = origImg.naturalWidth / origImg.naturalHeight;
+          inpW.value = origImg.naturalWidth;
+          inpH.value = origImg.naturalHeight;
+          document.getElementById('orig-w').textContent = origImg.naturalWidth;
+          document.getElementById('orig-h').textContent = origImg.naturalHeight;
+          document.getElementById('orig-fmt').textContent = imgUrl.split('.').pop().split('?')[0].toUpperCase().slice(0,4) || '?';
+          document.getElementById('orig-size').textContent = '—';
+        };
+        origImg.onerror = () => {
+          setStatus('Could not load image. The server may be blocking external access.');
+        };
+      }
+    }
+
+    function showSourceBanner(imgUrl) {
+      const existing = document.getElementById('source-banner');
+      if (existing) existing.remove();
+
+      const banner = document.createElement('div');
+      banner.id = 'source-banner';
+      banner.className = 'source-banner';
+      banner.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 5.5v4M6.5 4h.01" stroke-linecap="round"/></svg>
+        <span>Loaded from: <a href="${escHtml(imgUrl)}" target="_blank" rel="noopener" class="source-link">${escHtml(truncateUrl(imgUrl, 80))}</a></span>
+        <button class="source-dismiss" onclick="this.parentElement.remove()" title="Dismiss">✕</button>
+      `;
+      const main = document.querySelector('main');
+      main.insertBefore(banner, main.firstChild);
+    }
+
+    function showCorsWarning(imgUrl) {
+      const existing = document.getElementById('cors-warning');
+      if (existing) existing.remove();
+
+      const warn = document.createElement('div');
+      warn.id = 'cors-warning';
+      warn.className = 'cors-warning';
+      warn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 1.5l5 9H1.5l5-9z" stroke-linejoin="round"/><path d="M6.5 5.5v2.5M6.5 9.5h.01" stroke-linecap="round"/></svg>
+        <span>This image's server restricts direct access. To process it: <strong>right-click the image → Save As</strong>, then drop the saved file here.</span>
+      `;
+      const dropZoneEl = document.getElementById('drop-zone');
+      dropZoneEl.parentNode.insertBefore(warn, dropZoneEl);
+      setStatus('Preview only — server blocked direct fetch. See instructions above.');
+    }
+
+    function truncateUrl(url, maxLen) {
+      if (url.length <= maxLen) return url;
+      return url.slice(0, maxLen - 3) + '...';
+    }
+
+    // ── INIT: CHECK FOR ?img= PARAM ──
+    (function init() {
+      const params = new URLSearchParams(window.location.search);
+      const imgParam = params.get('img');
+      if (imgParam) {
+        try {
+          const decoded = decodeURIComponent(imgParam);
+          // Basic sanity check — must look like a URL
+          if (/^https?:\/\/.+/i.test(decoded)) {
+            loadFromUrl(decoded);
+          } else {
+            console.warn('Invalid img param:', decoded);
+          }
+        } catch (e) {
+          console.warn('Could not decode img param:', e);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
